@@ -16,10 +16,8 @@
 #include <algorithm>
 #include <cstdlib>
 
-namespace ex2
-{
-  namespace mac
-  {
+namespace ex2 {
+  namespace error_control {
 
     void
     MPDUUtility::repack (
@@ -186,6 +184,6 @@ namespace ex2
       repack(payload, BitsPerSymbol::BPSymb_1, tempBPS);
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 

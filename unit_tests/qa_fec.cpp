@@ -1,9 +1,9 @@
 /*!
- * @file qa_NoFEC.cpp
+ * @file qa_fec.cpp
  * @author Steven Knudsen
  * @date July 15, 2021
  *
- * @details Unit test for the NoFEC class.
+ * @details Unit test for the FEC class.
  *
  *
  * @copyright AlbertaSat 2021
@@ -19,10 +19,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "NoFEC.hpp"
+#include "no_fec.hpp"
 
 using namespace std;
-using namespace ex2::mac;
+using namespace ex2::error_control;
 
 #include "gtest/gtest.h"
 

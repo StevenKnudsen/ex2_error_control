@@ -14,7 +14,7 @@
 #include "vectorTools.hpp"
 
 namespace ex2 {
-  namespace sdr {
+  namespace error_control {
 
     void
     VectorTools::floatToBytes(float threshold, bool reverseBitOrder, std::vector<float>& in, std::vector<uint8_t>& out)
@@ -128,5 +128,5 @@ namespace ex2 {
 
     } // blockReverse
 
-  } /* namespace sdr */
+  } /* namespace error_control */
 } /* namespace ex2 */

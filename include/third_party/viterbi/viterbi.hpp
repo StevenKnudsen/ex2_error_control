@@ -27,7 +27,7 @@
 #include <vector>
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     // This class implements both a Viterbi Decoder and a Convolutional Encoder.
     class ViterbiCodec
@@ -119,7 +119,7 @@ namespace ex2 {
 
     int ReverseBits(int num_bits, int input);
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
 #endif /* EX2_MAC_ERROR_CONTROL_THIRD_PARTY_VITERBI_H_ */

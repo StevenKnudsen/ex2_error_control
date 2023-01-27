@@ -3,8 +3,7 @@
  * @author StevenKnudsen
  * @date April 30, 2021
  *
- * @details Define the Error Correction schemes that may be supported by
- * the UHF transparent mode.
+ * @details Define the Error Correction schemes that may be supported.
  *
  * @copyright AlbertaSat 2021
  *
@@ -12,8 +11,8 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_MAC_ERROR_CONTROL_ERROR_CORRECTION_H_
-#define EX2_MAC_ERROR_CONTROL_ERROR_CORRECTION_H_
+#ifndef EX2_ERROR_CONTROL_ERROR_CORRECTION_H_
+#define EX2_ERROR_CONTROL_ERROR_CORRECTION_H_
 
 #include <cstdint>
 #include <stdexcept>
@@ -24,7 +23,7 @@
 #define CCSDS_CONVOLUTIONAL_CODING_K ( 7 )
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     class ECException: public std::runtime_error {
 
@@ -240,7 +239,7 @@ namespace ex2 {
 
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_MAC_ERROR_CONTROL_ERROR_CORRECTION_H_ */
+#endif /* EX2_ERROR_CONTROL_ERROR_CORRECTION_H_ */

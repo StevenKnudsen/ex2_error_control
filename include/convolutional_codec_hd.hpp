@@ -1,5 +1,5 @@
 /*!
- * @file ConvolutionalCodecHD.hpp
+ * @file convolutional_codec_hd.hpp
  * @author Steven Knudsen
  * @date Dec 1, 2021
  *
@@ -12,16 +12,16 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_MAC_ERROR_CONTROL_CONVOLUTIONAL_CODEC_H_
-#define EX2_MAC_ERROR_CONTROL_CONVOLUTIONAL_CODEC_H_
+#ifndef EX2_ERROR_CONTROL_CONVOLUTIONAL_CODEC_HD_H_
+#define EX2_ERROR_CONTROL_CONVOLUTIONAL_CODEC_HD_H_
 
-#include "FEC.hpp"
+#include "fec.hpp"
 
-#include "viterbi.hpp"
+#include "third_party/viterbi/viterbi.hpp"
 
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     /*!
      * @brief Define a forward error correction scheme.
@@ -43,7 +43,7 @@ namespace ex2 {
       ViterbiCodec *m_codec = 0;
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_MAC_ERROR_CONTROL_CONVOLUTIONAL_CODEC_H_ */
+#endif /* EX2_ERROR_CONTROL_CONVOLUTIONAL_CODEC_HD_H_ */

@@ -13,13 +13,13 @@
  */
 
 
-#include "FEC.hpp"
-#include "NoFEC.hpp"
-#include "QCLDPC.hpp"
-#include "ConvolutionalCodecHD.hpp"
+#include "fec.hpp"
+#include "no_fec.hpp"
+#include "qcldpc.hpp"
+#include "convolutional_codec_hd.hpp"
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     FECException::FECException(const std::string& message) :
            runtime_error(message) { }
@@ -119,5 +119,5 @@ namespace ex2 {
 
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

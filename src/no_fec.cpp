@@ -12,10 +12,10 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#include "NoFEC.hpp"
+#include "no_fec.hpp"
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     NoFEC::~NoFEC() {  }
 
@@ -40,5 +40,5 @@ namespace ex2 {
       return 0;
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

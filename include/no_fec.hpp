@@ -1,7 +1,7 @@
 /*!
- * @file QCLDPC.hpp
+ * @file no_fec.hpp
  * @author StevenKnudsen
- * @date Sept 27, 2021
+ * @date July 12, 2021
  *
  * @details A passthrough FEC codec.
  *
@@ -11,36 +11,32 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_MAC_ERROR_CONTROL_QCLDPC_H_
-#define EX2_MAC_ERROR_CONTROL_QCLDPC_H_
+#ifndef EX2_ERROR_CONTROL_NOFEC_H_
+#define EX2_ERROR_CONTROL_NOFEC_H_
 
-#include <stdexcept>
-
-#include "FEC.hpp"
+#include "fec.hpp"
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     /*!
      * @brief Define a forward error correction scheme.
      */
-    class QCLDPC : public FEC {
+    class NoFEC : public FEC {
     public:
 
-      QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme);
+      NoFEC(ErrorCorrection::ErrorCorrectionScheme ecScheme) : FEC(ecScheme) { }
 
-      ~QCLDPC();
+      ~NoFEC();
 
       std::vector<uint8_t> encode(const std::vector<uint8_t>& payload);
 
       uint32_t decode(std::vector<uint8_t>& encodedPayload, float snrEstimate,
         std::vector<uint8_t>& decodedPayload);
 
-    private:
-      ErrorCorrection *m_errorCorrection = 0;
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_MAC_ERROR_CONTROL_QCLDPC_H_ */
+#endif /* EX2_ERROR_CONTROL_NOFEC_H_ */

@@ -19,7 +19,7 @@
 #define ERROR_CORRECTION_DEBUG 0 // set to 1 to enable extra debugging info
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     ECException::ECException(const std::string& message) :
        runtime_error(message) { }
@@ -769,5 +769,5 @@ namespace ex2 {
       return r;
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

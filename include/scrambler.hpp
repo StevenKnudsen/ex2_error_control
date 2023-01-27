@@ -11,8 +11,8 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_MAC_ERROR_CONTROL_SCRAMBLER_H_
-#define EX2_MAC_ERROR_CONTROL_SCRAMBLER_H_
+#ifndef EX2_ERROR_CONTROL_SCRAMBLER_H_
+#define EX2_ERROR_CONTROL_SCRAMBLER_H_
 
 #include <cstdint>
 
@@ -20,7 +20,7 @@
 #include "galoisLFSR.h"
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
 
     /*!
@@ -110,7 +110,7 @@ namespace ex2 {
       uint8_t bitReverse(uint8_t byte);
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_MAC_ERROR_CONTROL_SCRAMBLER_H_ */
+#endif /* EX2_ERROR_CONTROL_SCRAMBLER_H_ */

@@ -23,12 +23,12 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-#include "ConvolutionalCodecHD.hpp"
-#include "mpdu.hpp"
+#include "convolutional_codec_hd.hpp"
+//#include "mpdu.hpp"
 #include "vectorTools.hpp"
 
 using namespace std;
-using namespace ex2::mac;
+using namespace ex2::error_control;
 
 #include "gtest/gtest.h"
 

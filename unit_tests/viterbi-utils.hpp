@@ -29,8 +29,7 @@
 #include <string_view>
 #include <vector>
 
-using namespace ex2;
-using namespace mac;
+using namespace ex2::error_control;
 
 static inline ViterbiCodec::bitarr_t string_to_bits(std::string_view str)
 {

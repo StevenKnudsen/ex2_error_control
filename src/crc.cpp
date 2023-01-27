@@ -20,7 +20,7 @@
 //#define CRC_DEBUG 0
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     crc::crc ()
     {
@@ -117,5 +117,5 @@ namespace ex2 {
       }
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

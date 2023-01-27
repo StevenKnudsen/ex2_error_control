@@ -41,8 +41,8 @@
  * @license GPL, see above
  */
 
-#ifndef EX2_MAC_GOLAY_H__
-#define EX2_MAC_GOLAY_H__
+#ifndef EX2_ERROR_CONTROL_GOLAY_H_
+#define EX2_ERROR_CONTROL_GOLAY_H_
 
 #include <stdint.h>
 
@@ -73,4 +73,4 @@ int32_t golay_errors(uint32_t codeword);
  */
 int16_t golay_decode(uint32_t codeword);
 
-#endif // EX2_MAC_GOLAY_H__
+#endif // EX2_ERROR_CONTROL_GOLAY_H_

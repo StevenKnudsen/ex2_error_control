@@ -12,9 +12,7 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#include "ConvolutionalCodecHD.hpp"
-#include "mpdu.hpp"
-#include "mpduUtility.hpp"
+#include "convolutional_codec_hd.hpp"
 
 #define CC_HD_DEBUG 0
 
@@ -24,7 +22,7 @@
 #define CCSDS_CONVOLUTIONAL_CODE_POLY_G2 91  // 0x5B 0b1011011
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme)  : FEC(ecScheme) {
 
@@ -110,5 +108,5 @@ namespace ex2 {
       }
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

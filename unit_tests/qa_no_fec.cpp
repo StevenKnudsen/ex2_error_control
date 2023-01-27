@@ -1,5 +1,5 @@
 /*!
- * @file qa_NoFEC.cpp
+ * @file qa_no_fec.cpp
  * @author Steven Knudsen
  * @date July 15, 2021
  *
@@ -19,10 +19,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "NoFEC.hpp"
+#include "no_fec.hpp"
 
 using namespace std;
-using namespace ex2::mac;
+using namespace ex2::error_control;
 
 #include "gtest/gtest.h"
 
@@ -32,7 +32,7 @@ using namespace ex2::mac;
  * @brief Test Main Constructors, the one that is parameterized, and the one
  * that takes the received packet as input
  */
-TEST(noFEC, Foo )
+TEST(NoFEC, Foo )
 {
   /* ---------------------------------------------------------------------
    * Confirm the NoFEC object can be constructed

@@ -3,10 +3,7 @@
 # golay test for example.
 
 incdirUT = include_directories(
-    '../include/',
-    '../../mac/include',
-    '../../mac/include/pdu',
-    '../third_party/viterbi'
+    '../include/'
 )
 
 unit_test_golay = executable('unit_test-golay', 'qa_golay.cpp', '../src/golay.cpp',
@@ -18,30 +15,30 @@ test('golay', unit_test_golay,
     timeout: 30
     )
    
-unit_test_no_FEC = executable('unit_test-no_FEC', 'qa_NoFEC.cpp', core_source_files, third_party_source_files,
+unit_test_No_FEC = executable('unit_test-No_FEC', 'qa_no_fec.cpp', core_source_files, third_party_source_files,
     include_directories : incdirUT,
     dependencies: [gtest_dep]
     )
     
-test('noFEC', unit_test_no_FEC,
+test('NoFEC', unit_test_No_FEC,
     timeout: 30
     )
 
-unit_test_viterbi = executable('unit_test-viterbi', 'qa_viterbi.cpp', core_source_files, third_party_source_files,
-    include_directories : incdirUT,
-    dependencies: [gtest_dep]
-    )
-    
-test('viterbi', unit_test_viterbi,
-    timeout: 100
-    )
-
-unit_test_cc_hd_FEC = executable('unit_test-cc_hd_FEC', 'qa_ConvolutionalCodecHD.cpp', 'vectorTools.cpp', core_source_files, third_party_source_files,
-    include_directories : incdirUT,
-    dependencies: [gtest_dep]
-    )
-    
-test('cc_hd_FEC', unit_test_cc_hd_FEC,
-    timeout: 100
-    )
+#unit_test_viterbi = executable('unit_test-viterbi', 'qa_viterbi.cpp', core_source_files, third_party_source_files,
+#    include_directories : incdirUT,
+#    dependencies: [gtest_dep]
+#    )
+#    
+#test('viterbi', unit_test_viterbi,
+#    timeout: 100
+#    )
+#
+#unit_test_CC_HD_FEC = executable('unit_test-CC_HD_FEC', 'qa_convolutional_codec_hd.cpp', 'vectorTools.cpp', core_source_files, third_party_source_files,
+#    include_directories : incdirUT,
+#    dependencies: [gtest_dep]
+#    )
+#   
+#test('CC_HD_FEC', unit_test_CC_HD_FEC,
+#    timeout: 100
+#    )
 

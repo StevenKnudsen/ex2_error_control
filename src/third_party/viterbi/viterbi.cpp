@@ -3,7 +3,7 @@
 // Author: Min Xu <xukmin@gmail.com>
 // Date: 01/30/2015
 
-#include "viterbi.hpp"
+#include "third_party/viterbi/viterbi.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     int ReverseBits(int num_bits, int input)
     {
@@ -349,6 +349,6 @@ namespace ex2 {
       return decoded;
     } // decodeTruncated
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 

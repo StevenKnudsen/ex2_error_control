@@ -12,11 +12,10 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#include "QCLDPC.hpp"
-#include "mpdu.hpp"
+#include "qcldpc.hpp"
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     QCLDPC::QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme) : FEC(ecScheme){
       m_errorCorrection = new ErrorCorrection(ecScheme, (MPDU::maxMTU() * 8));
@@ -76,5 +75,5 @@ namespace ex2 {
       return 0;
     }
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */

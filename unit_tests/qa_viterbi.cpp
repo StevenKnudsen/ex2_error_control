@@ -19,12 +19,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "viterbi.hpp"
+#include "third_party/viterbi/viterbi.hpp"
 #include "viterbi-utils.hpp"
 
 using namespace std;
-using namespace ex2;
-using namespace mac;
+using namespace ex2::error_control;
 
 #include "gtest/gtest.h"
 

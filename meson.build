@@ -43,21 +43,22 @@ endif
 
 
 core_source_files = [
+    PRJ_DIR / 'src/convolutional_codec_hd.cpp',
+    PRJ_DIR / 'src/crc.cpp',
     PRJ_DIR / 'src/error_correction.cpp',
-    PRJ_DIR / 'src/ConvolutionalCodecHD.cpp',
-    PRJ_DIR / 'src/FEC.cpp',
-    PRJ_DIR / 'src/NoFEC.cpp',
-    PRJ_DIR / 'src/QCLDPC.cpp',
+    PRJ_DIR / 'src/fec.cpp',
     PRJ_DIR / 'src/golay.cpp',
+    PRJ_DIR / 'src/no_fec.cpp',
+    PRJ_DIR / 'src/qcldpc.cpp'
 ]
 
 incdir = include_directories(
     'include',
-    'third_party/viterbi'
+    'include/third_party/viterbi'
 )
 
 third_party_source_files = [
-    PRJ_DIR / 'third_party/viterbi/viterbi.cpp'
+    PRJ_DIR / 'src/third_party/viterbi/viterbi.cpp'
 ]
 
 if gtest_dep.found()

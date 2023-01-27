@@ -11,14 +11,14 @@
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_MAC_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_
-#define EX2_MAC_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_
+#ifndef EX2_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_
+#define EX2_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_
 
 #include <cstdint>
 #include <vector>
 
 namespace ex2 {
-  namespace mac {
+  namespace error_control {
 
     /*!
      * @brief Misc tools to manipulate vectors.
@@ -81,7 +81,7 @@ namespace ex2 {
     private:
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_MAC_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_ */
+#endif /* EX2_ERROR_CONTROL_UNIT_TESTS_VECTOR_TOOLS_H_ */
