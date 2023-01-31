@@ -51,7 +51,7 @@ namespace ex2 {
        * @param[in] ecScheme The error correction scheme
        * @param[in] messageLength The message length
        */
-//      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
+      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
 
       /*!
       * @brief FEC Constructor
@@ -88,8 +88,11 @@ namespace ex2 {
       virtual uint32_t decode(std::vector<uint8_t>& codeword, const float snrEstimate,
         std::vector<uint8_t>& message) = 0;
 
+      uint32_t getMessageLength() const;
+
     private:
       ErrorCorrection::ErrorCorrectionScheme m_ecScheme;
+      uint32_t m_messageLength;
     };
 
   } /* namespace error_control */

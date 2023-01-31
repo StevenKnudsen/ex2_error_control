@@ -24,7 +24,7 @@
 namespace ex2 {
   namespace error_control {
 
-    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme)  : FEC(ecScheme) {
+    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength)  : FEC(ecScheme, messageLength) {
 
 
       // Only the CCSDS schemes are permitted

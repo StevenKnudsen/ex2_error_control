@@ -29,7 +29,7 @@ namespace ex2 {
     class ConvolutionalCodecHD : public FEC {
     public:
 
-      ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme);
+      ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
 
       ~ConvolutionalCodecHD();
 

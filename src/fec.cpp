@@ -25,7 +25,7 @@ namespace ex2 {
            runtime_error(message) { }
 
     FEC *
-    FEC::makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme)
+    FEC::makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme,const uint32_t messageLength)
     {
 
       // Create a new FEC-based object according to the desired FEC scheme.
@@ -78,22 +78,22 @@ namespace ex2 {
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_648_R_2_3:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_648_R_3_4:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_648_R_5_6:
-          newFEC = new QCLDPC(ecScheme); // @TODO change when this is implemented
+          newFEC = new QCLDPC(ecScheme, messageLength); // @TODO change when this is implemented
           break;
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1296_R_1_2:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1296_R_2_3:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1296_R_3_4:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1296_R_5_6:
-          newFEC = new QCLDPC(ecScheme); // @TODO change when this is implemented
+          newFEC = new QCLDPC(ecScheme, messageLength); // @TODO change when this is implemented
           break;
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1944_R_1_2:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1944_R_2_3:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1944_R_3_4:
         case ErrorCorrection::ErrorCorrectionScheme::IEEE_802_11N_QCLDPC_1944_R_5_6:
-          newFEC = new QCLDPC(ecScheme); // @TODO change when this is implemented
+          newFEC = new QCLDPC(ecScheme, messageLength); // @TODO change when this is implemented
           break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2:
-          newFEC = new ConvolutionalCodecHD(ecScheme);
+          newFEC = new ConvolutionalCodecHD(ecScheme, messageLength);
           break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_2_3:
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_3_4:
@@ -102,7 +102,7 @@ namespace ex2 {
           newFEC = NULL; // @TODO change when this is implemented
           break;
         case ErrorCorrection::ErrorCorrectionScheme::NO_FEC:
-          newFEC = new NoFEC(ecScheme);
+          newFEC = new NoFEC(ecScheme, messageLength);
           break;
 
 
@@ -113,8 +113,9 @@ namespace ex2 {
       return newFEC;
     }
 
-    FEC::FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme) :
-        m_ecScheme(ecScheme)
+    FEC::FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength) :
+        m_ecScheme(ecScheme),
+        m_messageLength(messageLength)
     {
 
     }

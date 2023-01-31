@@ -17,7 +17,7 @@
 namespace ex2 {
   namespace error_control {
 
-    QCLDPC::QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme) : FEC(ecScheme){
+    QCLDPC::QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength) : FEC(ecScheme, messageLength){
       m_errorCorrection = new ErrorCorrection(ecScheme, (MPDU::maxMTU() * 8));
     }
 
