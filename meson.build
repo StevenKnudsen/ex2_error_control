@@ -19,7 +19,7 @@ prj_dir = run_command('sh', '-c', 'echo $PWD', check: true)
 PRJ_DIR = prj_dir.stdout().strip()
 message('prj_dir = ' + PRJ_DIR)
 
-eigen_dep = dependency('eigen3')
+#eigen_dep = dependency('eigen3')
 
 gtest_dep = dependency('gtest_main', required: false)
 
@@ -44,7 +44,6 @@ endif
 
 core_source_files = [
     PRJ_DIR / 'src/convolutional_codec_hd.cpp',
-    PRJ_DIR / 'src/crc.cpp',
     PRJ_DIR / 'src/error_correction.cpp',
     PRJ_DIR / 'src/fec.cpp',
     PRJ_DIR / 'src/golay.cpp',

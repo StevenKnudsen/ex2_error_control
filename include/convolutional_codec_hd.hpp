@@ -29,7 +29,7 @@ namespace ex2 {
     class ConvolutionalCodecHD : public FEC {
     public:
 
-      ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
+      ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
 
       ~ConvolutionalCodecHD();
 
@@ -39,7 +39,6 @@ namespace ex2 {
         std::vector<uint8_t>& decodedPayload);
 
     private:
-      ErrorCorrection *m_errorCorrection = 0;
       ViterbiCodec *m_codec = 0;
     };
 

@@ -27,7 +27,7 @@ namespace ex2 {
     class QCLDPC : public FEC {
     public:
 
-      QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
+      QCLDPC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
 
       ~QCLDPC();
 

@@ -49,9 +49,9 @@ namespace ex2 {
        * @note The FEC factory assumes that all FEC schemes work on a fixed length message.
        * 
        * @param[in] ecScheme The error correction scheme
-       * @param[in] messageLength The message length
+       * @param[in] messageLengthBits The message length in bits
        */
-      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
+      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
 
       /*!
       * @brief FEC Constructor
@@ -59,9 +59,9 @@ namespace ex2 {
       * @note The FEC factory assumes that all FEC schemes work on a fixed length message.
       * 
       * @param[in] ecScheme The error correction scheme
-      * @param[in] messageLength The message length
+      * @param[in] messageLengthBits The message length in bits
       */
-      FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength);
+      FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
 
       virtual ~FEC() {}
 
@@ -69,7 +69,7 @@ namespace ex2 {
        * @brief A virtual function to encode a payload using the FEC scheme
        *
        * @param[in] message The message to encode; assumed one message bit per byte
-       * @return The codeword (encoded message)
+       * @return The codeword (encoded message) unpacked, 1 bit per byte
        */
       virtual std::vector<uint8_t> encode(const std::vector<uint8_t>& message) = 0;
 
@@ -80,7 +80,7 @@ namespace ex2 {
        * it needs to be manipulated? After all, there is no contract saying it's
        * not destroyed afrter decoding
        *
-       * @param[in] codeword The codeword (encoded message)
+       * @param[in] codeword The codeword (encoded message) assume unpacked, 1 bit per byte
        * @param[in] snrEstimate An estimate of the SNR for FEC schemes that need it.
        * @param[out] message The resulting decoded message with one bit per byte
        * @return The number of bit errors from the decoding process
@@ -90,9 +90,11 @@ namespace ex2 {
 
       uint32_t getMessageLength() const;
 
-    private:
-      ErrorCorrection::ErrorCorrectionScheme m_ecScheme;
-      uint32_t m_messageLength;
+    protected:
+      // ErrorCorrection::ErrorCorrectionScheme m_ecScheme;
+      // uint32_t m_messageLengthBits;
+      ErrorCorrection *m_errorCorrection = 0;
+
     };
 
   } /* namespace error_control */

@@ -15,6 +15,7 @@
 #include "convolutional_codec_hd.hpp"
 
 #define CC_HD_DEBUG 0
+#define CC_HD_MEMORY_CONSTRAINED_TARGET 0
 
 // CCSDS polynomials and constraint length; see CCSDS 131.0-B-3
 #define CCSDS_CONVOLUTIONAL_CODE_CONSTRAINT 7
@@ -24,7 +25,7 @@
 namespace ex2 {
   namespace error_control {
 
-    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLength)  : FEC(ecScheme, messageLength) {
+    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits)  : FEC(ecScheme, messageLengthBits) {
 
 
       // Only the CCSDS schemes are permitted
@@ -33,31 +34,32 @@ namespace ex2 {
           break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_2_3:
           throw new FECException("Convolutional coding rate 2/3 not yet implemented");
-//          break;
+          break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_3_4:
           throw new FECException("Convolutional coding rate 3/4 not yet implemented");
-//          break;
+          break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_5_6:
           throw new FECException("Convolutional coding rate 5/6 not yet implemented");
-//          break;
+          break;
         case ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_7_8:
           throw new FECException("Convolutional coding rate 7/8 not yet implemented");
-//          break;
+          break;
         default:
           throw new FECException("Must be a Convolutional Codec scheme.");
-//          break;
+          break;
       }
 
-      // @TODO does this belong in the FEC constructor?
-      m_errorCorrection = new ErrorCorrection(ecScheme, (MPDU::maxMTU() * 8));
-      std::vector<int> polynomials{ CCSDS_CONVOLUTIONAL_CODE_POLY_G1, CCSDS_CONVOLUTIONAL_CODE_POLY_G2};
+#if CC_HD_MEMORY_CONSTRAINED_TARGET
+      // for dev of memory-reduced algorithm, use constraint len 3 and { 7, 5 }, which is used for a unit test; see qa_viterbi
+      std::vector<int> polynomials{ 7, 5};
+
+      m_codec = new ViterbiCodec(3, polynomials);
+#else
+      std::vector<int> polynomials{CCSDS_CONVOLUTIONAL_CODE_POLY_G1, CCSDS_CONVOLUTIONAL_CODE_POLY_G2};
 
       m_codec = new ViterbiCodec(CCSDS_CONVOLUTIONAL_CODE_CONSTRAINT, polynomials);
+#endif
 
-//      // for dev of memory-reduced algorithm, use constraint len 3 and { 7, 5 }, which is used for a unit test; see qa_viterbi
-//      std::vector<int> polynomials{ 7, 5};
-//
-//      m_codec = new ViterbiCodec(3, polynomials);
     }
 
     ConvolutionalCodecHD::~ConvolutionalCodecHD() {
@@ -91,17 +93,11 @@ namespace ex2 {
         return UINT32_MAX;
       }
       else {
-        // assume the encoded payload is packed, 8 bits per byte. Repack to be
-        // 1 bit per byte
-        MPDUUtility::repack(encodedPayload, MPDUUtility::BPSymb_8, MPDUUtility::BPSymb_1);
+        // assume the encoded payload is unpacked, 1 bits per byte.
 
         // Decode the 1 bit per byte payload.
-        ViterbiCodec::bitarr_t decoded = m_codec->decodeTruncated(encodedPayload);
-
-        // Repack the result to be 8 bits per byte
-        MPDUUtility::repack(decoded, MPDUUtility::BPSymb_1, MPDUUtility::BPSymb_8);
         decodedPayload.resize(0);
-        decodedPayload.insert(decodedPayload.end(),decoded.begin(),decoded.end());
+        decodedPayload = m_codec->decodeTruncated(encodedPayload);
 
         // We have no way to know if there are bit errors, so return zero (0)
         return 0;

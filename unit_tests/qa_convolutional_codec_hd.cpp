@@ -24,7 +24,7 @@
 #include <boost/random/normal_distribution.hpp>
 
 #include "convolutional_codec_hd.hpp"
-//#include "mpdu.hpp"
+#include "qa_byte_symbol_utils.hpp"
 #include "vectorTools.hpp"
 
 using namespace std;
@@ -33,6 +33,11 @@ using namespace ex2::error_control;
 #include "gtest/gtest.h"
 
 #define QA_CC_HD_DEBUG 0 // set to 1 for debugging output
+
+//
+// Message length
+//
+#define QA_CC_HD_MESSAGE_LENGTH_BIT (128*8)
 
 uint8_t numOnesInByte(uint8_t b) {
   uint8_t count = (b >> 7) & 0x01;
@@ -83,9 +88,10 @@ check_decoder_ber (
     }
   }
 
-  ConvolutionalCodecHD ccHDCodec(errorCorrectionScheme);
+  ConvolutionalCodecHD ccHDCodec(errorCorrectionScheme, QA_CC_HD_MESSAGE_LENGTH_BIT);
 
-  ErrorCorrection ec(errorCorrectionScheme, MPDU::maxMTU()*8);
+  // ec is used for convenience
+  ErrorCorrection ec(errorCorrectionScheme, QA_CC_HD_MESSAGE_LENGTH_BIT);
 
   // Get ready for simulating noise at the input SNR
   float sigma2 = 0.5 / pow (10.0, snr / 10.0); // noise variance
@@ -226,7 +232,7 @@ TEST(convolutional_codec_hd, constructor_accessor )
   ConvolutionalCodecHD *ccHDCodec = 0;
 
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_2_3);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_2_3, QA_CC_HD_MESSAGE_LENGTH_BIT);
     FAIL() << "Should not be able to instantiate FEC for CCSDS_CONVOLUTIONAL_CODING_R_2_3.";
   }
   catch (FECException *e) {
@@ -236,7 +242,7 @@ TEST(convolutional_codec_hd, constructor_accessor )
     delete e;
   }
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_3_4);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_3_4, QA_CC_HD_MESSAGE_LENGTH_BIT);
     FAIL() << "Should not be able to instantiate FEC for CCSDS_CONVOLUTIONAL_CODING_R_3_4.";
   }
   catch (FECException *e) {
@@ -246,7 +252,7 @@ TEST(convolutional_codec_hd, constructor_accessor )
     delete e;
   }
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_5_6);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_5_6, QA_CC_HD_MESSAGE_LENGTH_BIT);
     FAIL() << "Should not be able to instantiate FEC for CCSDS_CONVOLUTIONAL_CODING_R_5_6.";
   }
   catch (FECException *e) {
@@ -256,7 +262,7 @@ TEST(convolutional_codec_hd, constructor_accessor )
     delete e;
   }
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_7_8);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_7_8, QA_CC_HD_MESSAGE_LENGTH_BIT);
     FAIL() << "Should not be able to instantiate FEC for CCSDS_CONVOLUTIONAL_CODING_R_7_8.";
   }
   catch (FECException *e) {
@@ -267,7 +273,7 @@ TEST(convolutional_codec_hd, constructor_accessor )
   }
 
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2, QA_CC_HD_MESSAGE_LENGTH_BIT);
   }
   catch (FECException *e) {
     FAIL() << "Should be able to instantiate FEC for CCSDS_CONVOLUTIONAL_CODING_R_1_2.";
@@ -296,7 +302,7 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
   ConvolutionalCodecHD *ccHDCodec;
 
   try {
-    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2);
+    ccHDCodec = new ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2, QA_CC_HD_MESSAGE_LENGTH_BIT);
 
 
     // Set the packet test lengths to be a superset of what is used in
@@ -319,6 +325,8 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
 #if QA_CC_HD_DEBUG
       printf("packet length %d (2 bytes) %02x\n", packet.size(), packet.size());
 #endif
+    // Unpack the packet to make it 1 bit per byte as per the FEC interface.
+    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
 
       std::vector<uint8_t> encodedPayload = ccHDCodec->encode(packet);
 
@@ -331,9 +339,9 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
       ASSERT_FALSE(same) << "encoded payload matches payload; not possible if codeword is non-systematic";
 
 
-#if QA_CC_HD_DEBUG
+//#if QA_CC_HD_DEBUG
       printf("input packet len %ld encodedPayload len %ld\n",packet.size(),encodedPayload.size());
-#endif
+//#endif
 
       // Decode the encoded payload
       std::vector<uint8_t> dPayload;
@@ -345,17 +353,22 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
 
       // Check the decoded and original messages match
       ASSERT_TRUE(packet.size() == dPayload.size()) << "decoded payload size does not match input payload size";
-#if QA_CC_HD_DEBUG
-      printf("packet len %ld packet len %ld encoded len %ld decoded len %ld\n",
-        packetDataLengths[currentPacket], iPayload.size(), encodedPayload.size(), dPayload.size());
-#endif
+//#if QA_CC_HD_DEBUG
+      printf("target packet len %ld actual packet len %ld encoded len %ld decoded len %ld\n",
+        packetDataLengths[currentPacket], packet.size(), encodedPayload.size(), dPayload.size());
+//#endif
       if (bitErrors == 0) {
         same = true;
         for (unsigned long i = 0; i < packet.size(); i++) {
+          if (packet[i] != dPayload[i]) printf("%ld\n",i);
           same = same & (packet[i] == dPayload[i]);
         }
         ASSERT_TRUE(same) << "decoded payload does not match input payload";
       }
+
+      // If we were returning the decoded message, we would need to repack it.
+      ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
+
 
     } // for various packet lengths
 

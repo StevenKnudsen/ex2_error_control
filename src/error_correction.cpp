@@ -25,16 +25,13 @@ namespace ex2 {
        runtime_error(message) { }
 
     ErrorCorrection::ErrorCorrection(ErrorCorrectionScheme ecScheme,
-      uint32_t continuousMaxCodewordLen) :
+      uint32_t continuousMaxCodewordLenBits) :
                 m_errorCorrectionScheme(ecScheme),
-                m_continuousMaxCodewordLen(continuousMaxCodewordLen)
+                m_continuousMaxCodewordLenBits(continuousMaxCodewordLenBits)
     {
       // TODO this is hard coded. Find a more elegant way to update the code for
       // new implemented FEC schemes
       if (!isValid(ecScheme)) {
-#if ERROR_CORRECTION_DEBUG
-        printf("\nscheme %d\n", (uint16_t) ecScheme);
-#endif
         throw ECException("Invalid FEC Scheme");
       }
       m_codingRate = m_getCodingRate(ecScheme);
@@ -56,16 +53,10 @@ namespace ex2 {
     {
       m_errorCorrectionScheme = errorCorrectionScheme;
       if (!isValid(m_errorCorrectionScheme)) {
-#if ERROR_CORRECTION_DEBUG
-        printf("\ninvalid scheme %d\n", (uint16_t) errorCorrectionScheme);
-#endif
         throw ECException("Invalid FEC Scheme");
       }
       m_codingRate = m_getCodingRate(m_errorCorrectionScheme);
       if (m_codingRate == ErrorCorrection::CodingRate::RATE_BAD) {
-#if ERROR_CORRECTION_DEBUG
-        printf("\nbad rate for scheme %d\n", (uint16_t) errorCorrectionScheme);
-#endif
         throw ECException("Invalid FEC Scheme; no rate known");
       }
 
@@ -485,14 +476,14 @@ namespace ex2 {
           // message is calculated as described in @p m_messageLength()
         case ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2:
         {
-          uint32_t msgLen = m_continuousMaxCodewordLen / 2;
+          uint32_t msgLen = m_continuousMaxCodewordLenBits / 2;
           msgLen -= (msgLen % 8);
           codewordLen = msgLen * 2;
         }
         break;
         case ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_2_3: // @todo not confirmed/tested!
         {
-          uint32_t msgLen = m_continuousMaxCodewordLen * 2 / 3;
+          uint32_t msgLen = m_continuousMaxCodewordLenBits * 2 / 3;
           msgLen -= (msgLen % 8);
           codewordLen = msgLen * 3 / 2;
           codewordLen += (codewordLen % 8);
@@ -500,21 +491,21 @@ namespace ex2 {
         break;
         case ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_3_4: // @todo not confirmed/tested!
         {
-          uint32_t msgLen = m_continuousMaxCodewordLen * 3 / 4;
+          uint32_t msgLen = m_continuousMaxCodewordLenBits * 3 / 4;
           msgLen -= (msgLen % 8);
           codewordLen = msgLen * 4 / 3;
         }
         break;
         case ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_5_6: // @todo not confirmed/tested!
         {
-          uint32_t msgLen = m_continuousMaxCodewordLen * 5 / 6;
+          uint32_t msgLen = m_continuousMaxCodewordLenBits * 5 / 6;
           msgLen -= (msgLen % 8);
           codewordLen = msgLen * 6 / 5;
         }
         break;
         case ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_7_8: // @todo not confirmed/tested!
         {
-          uint32_t msgLen = m_continuousMaxCodewordLen * 7 / 8;
+          uint32_t msgLen = m_continuousMaxCodewordLenBits * 7 / 8;
           msgLen -= (msgLen % 8);
           codewordLen = msgLen * 8 / 7;
         }
@@ -523,7 +514,7 @@ namespace ex2 {
         case ErrorCorrectionScheme::NO_FEC:
           // If there is no FEC scheme, the codeword and message are the same.
           // We might as well use what was set for continuous coders
-          codewordLen = m_continuousMaxCodewordLen; // bits
+          codewordLen = m_continuousMaxCodewordLenBits; // bits
           break;
 
         default:
@@ -659,7 +650,7 @@ namespace ex2 {
         case ErrorCorrectionScheme::NO_FEC:
           // If there is no FEC scheme, the codeword and message are the same.
           // We might as well use what was set for continuous coders
-          messageLen = m_continuousMaxCodewordLen; // bits
+          messageLen = m_continuousMaxCodewordLenBits; // bits
           break;
 
         default:

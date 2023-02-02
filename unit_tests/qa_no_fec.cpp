@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include "no_fec.hpp"
+#include "qa_byte_symbol_utils.hpp"
 
 using namespace std;
 using namespace ex2::error_control;
@@ -40,9 +41,9 @@ TEST(NoFEC, Foo )
    */
 
   // Set the length of the test packet so it all fits into a transparent mode payload
-  const unsigned long int testPacketLength = 10;
+  const unsigned long int testPacketLength = 10; // bytes
 
-  FEC * noFEC = new NoFEC(ErrorCorrection::ErrorCorrectionScheme::NO_FEC);
+  FEC * noFEC = new NoFEC(ErrorCorrection::ErrorCorrectionScheme::NO_FEC, testPacketLength*8);
 
   ASSERT_TRUE(noFEC != NULL) << "NoFEC failed to instantiate";
 
@@ -61,7 +62,10 @@ TEST(NoFEC, Foo )
     }
 #endif
 
-    // @TODO maybe make these std::vector<uint8_t> ???
+    // Technically we should be unpacking the packet to make it 1 bit per byte
+    // as per the FEC interface. So that there is an example, we will do it.
+    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
+
     std::vector<uint8_t> encodedPayload = noFEC->encode(packet);
 
     bool same = true;
@@ -77,6 +81,10 @@ TEST(NoFEC, Foo )
     for (unsigned long i = 0; i < packet.size(); i++) {
       same = same & (packet[i] == dPayload[i]);
     }
+
+    // Let's repack the decoded payload so that it's in the same format as the original packet
+    // just so there is an example of how to do it
+    ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
 
     ASSERT_TRUE(same) << "decoded payload does not match input payload";
     ASSERT_TRUE(bitErrors == 0) << "Bit error count > 0";

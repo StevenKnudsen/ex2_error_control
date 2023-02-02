@@ -134,11 +134,11 @@ namespace ex2 {
        *
        * @param[in] ecScheme The error correction scheme, whcih is the coding
        *   method and rate combined
-       * @param[in] continuousMaxCodewordLen For schemes that support continuous
+       * @param[in] continuousMaxCodewordLenBits For schemes that support continuous
        *   coding (i.e., not block coding) the maximum codeword length in bits.
        */
       ErrorCorrection(ErrorCorrectionScheme ecScheme,
-        uint32_t continuousMaxCodewordLen);
+        uint32_t continuousMaxCodewordLenBits);
 
       virtual
       ~ErrorCorrection();
@@ -211,7 +211,7 @@ namespace ex2 {
     private:
       ErrorCorrectionScheme m_errorCorrectionScheme;
       CodingRate m_codingRate;
-      uint32_t m_continuousMaxCodewordLen;
+      uint32_t m_continuousMaxCodewordLenBits;
 
       CodingRate m_getCodingRate(ErrorCorrectionScheme scheme);
 
