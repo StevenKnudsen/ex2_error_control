@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include "no_fec.hpp"
-#include "qa_byte_symbol_utils.hpp"
+//#include "byte_symbol_utils.hpp"
 
 using namespace std;
 using namespace ex2::error_control;
@@ -33,7 +33,7 @@ using namespace ex2::error_control;
  * @brief Test Main Constructors, the one that is parameterized, and the one
  * that takes the received packet as input
  */
-TEST(NoFEC, Foo )
+TEST(NoFEC, ConstrutorEncodeDecode )
 {
   /* ---------------------------------------------------------------------
    * Confirm the NoFEC object can be constructed
@@ -64,7 +64,7 @@ TEST(NoFEC, Foo )
 
     // Technically we should be unpacking the packet to make it 1 bit per byte
     // as per the FEC interface. So that there is an example, we will do it.
-    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
+//    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
 
     std::vector<uint8_t> encodedPayload = noFEC->encode(packet);
 
@@ -84,7 +84,7 @@ TEST(NoFEC, Foo )
 
     // Let's repack the decoded payload so that it's in the same format as the original packet
     // just so there is an example of how to do it
-    ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
+//    ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
 
     ASSERT_TRUE(same) << "decoded payload does not match input payload";
     ASSERT_TRUE(bitErrors == 0) << "Bit error count > 0";

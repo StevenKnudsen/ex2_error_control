@@ -326,7 +326,7 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
       printf("packet length %d (2 bytes) %02x\n", packet.size(), packet.size());
 #endif
     // Unpack the packet to make it 1 bit per byte as per the FEC interface.
-    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
+//    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
 
       std::vector<uint8_t> encodedPayload = ccHDCodec->encode(packet);
 
@@ -335,6 +335,7 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
       bool same = true;
       for (unsigned long i = 0; i < packet.size(); i++) {
         same = same & (packet[i] == encodedPayload[i]);
+        printf("enc 0x%02x\n",encodedPayload[i]);
       }
       ASSERT_FALSE(same) << "encoded payload matches payload; not possible if codeword is non-systematic";
 
@@ -361,13 +362,14 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
         same = true;
         for (unsigned long i = 0; i < packet.size(); i++) {
           if (packet[i] != dPayload[i]) printf("%ld\n",i);
+          printf("packet[%ld] 0x%02x decoded 0x%02x\n",i,packet[i],dPayload[i]);
           same = same & (packet[i] == dPayload[i]);
         }
         ASSERT_TRUE(same) << "decoded payload does not match input payload";
       }
 
       // If we were returning the decoded message, we would need to repack it.
-      ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
+//      ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
 
 
     } // for various packet lengths

@@ -25,7 +25,7 @@ namespace ex2 {
     class NoFEC : public FEC {
     public:
 
-      NoFEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits) : FEC(ecScheme, messageLengthBits) { }
+      NoFEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t msgLengthBytes) : FEC(ecScheme, msgLengthBytes) { }
 
       ~NoFEC();
 

@@ -1,17 +1,17 @@
 /*!
- * @file mpduUtility.cpp
+ * @file byte_symbol_utils.cpp
  * @author Steven Knudsen
- * @date May 19, 2022
+ * @date Jan 19, 2023
  *
- * @details MPDU utilities; see header descriptions.
+ * @details Byte symbol utilities; see header descriptions.
  *
- * @copyright University of Alberta 2022
+ * @copyright University of Alberta 2023
  *
  * @license
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#include "mpduUtility.hpp"
+#include "utilities/byte_symbol_utils.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -20,7 +20,7 @@ namespace ex2 {
   namespace error_control {
 
     void
-    MPDUUtility::repack (
+    ByteSymbolUtility::repack (
       std::vector<uint8_t>& payload,
       BitsPerSymbol currentBps,
       BitsPerSymbol newBps)
@@ -82,7 +82,7 @@ namespace ex2 {
     }
 
     void
-    MPDUUtility::pack (std::vector<uint8_t>& payload)
+    ByteSymbolUtility::pack (std::vector<uint8_t>& payload)
     {
 
       // Determine how many output bytes are needed
@@ -123,7 +123,7 @@ namespace ex2 {
     } // pack
 
     void
-    MPDUUtility::unpack (std::vector<uint8_t>& payload)
+    ByteSymbolUtility::unpack (std::vector<uint8_t>& payload)
     {
       // have to assume that all bits in a packed payload are required,
       // so the number of unpacked samples will always be a multiple of 8
@@ -153,7 +153,7 @@ namespace ex2 {
     } // unpack
 
     void
-    MPDUUtility::reverse(std::vector<uint8_t>& payload, BitsPerSymbol currentBps, bool byteLevel)
+    ByteSymbolUtility::reverse(std::vector<uint8_t>& payload, BitsPerSymbol currentBps, bool byteLevel)
     {
       BitsPerSymbol tempBPS = currentBps;
       if (!byteLevel) {
@@ -170,7 +170,7 @@ namespace ex2 {
     }
 
     void
-    MPDUUtility::roll(std::vector<uint8_t>& payload, BitsPerSymbol currentBps, uint32_t numBits, bool left)
+    ByteSymbolUtility::roll(std::vector<uint8_t>& payload, BitsPerSymbol currentBps, uint32_t numBits, bool left)
     {
       if (numBits == 0) return;
       BitsPerSymbol tempBPS = currentBps;

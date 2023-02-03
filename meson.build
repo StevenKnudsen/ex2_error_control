@@ -43,6 +43,7 @@ endif
 
 
 core_source_files = [
+    PRJ_DIR / 'src/utilities/byte_symbol_utils.cpp',
     PRJ_DIR / 'src/convolutional_codec_hd.cpp',
     PRJ_DIR / 'src/error_correction.cpp',
     PRJ_DIR / 'src/fec.cpp',
@@ -53,6 +54,7 @@ core_source_files = [
 
 incdir = include_directories(
     'include',
+    'include/utilities',
     'include/third_party/viterbi'
 )
 

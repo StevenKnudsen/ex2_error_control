@@ -96,7 +96,6 @@ namespace ex2 {
       uint8_t encodedBits = 0;
       uint8_t encodedBitCount = 0;
       int rowIndex;
-
       // Encode the message bits.
       for (unsigned int i = 0; i < bits.size(); i++) {
         t = bits[i];

@@ -13,6 +13,7 @@
  */
 
 #include "convolutional_codec_hd.hpp"
+#include "utilities/byte_symbol_utils.hpp"
 
 #define CC_HD_DEBUG 0
 #define CC_HD_MEMORY_CONSTRAINED_TARGET 0
@@ -25,7 +26,7 @@
 namespace ex2 {
   namespace error_control {
 
-    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits)  : FEC(ecScheme, messageLengthBits) {
+    ConvolutionalCodecHD::ConvolutionalCodecHD(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t msgLengthBytes)  : FEC(ecScheme, msgLengthBytes) {
 
 
       // Only the CCSDS schemes are permitted
@@ -88,16 +89,21 @@ namespace ex2 {
 
       decodedPayload.resize(0); // Resize in all FEC decode methods
 
+      // Since we use @p encodePacked, which results in a packed codeword, we must
+      // unpack it before we invoke the decode method as it takes unpacked 
+      // codeword bytes (1 bit per byte)
+
+      ByteSymbolUtility::repack(encodedPayload, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
+
       if (!m_codec) {
         // make it very obviously fail by returning a huge number of bit errors
         return UINT32_MAX;
       }
       else {
-        // assume the encoded payload is unpacked, 1 bits per byte.
-
         // Decode the 1 bit per byte payload.
-        decodedPayload.resize(0);
         decodedPayload = m_codec->decodeTruncated(encodedPayload);
+
+        ByteSymbolUtility::repack(decodedPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
 
         // We have no way to know if there are bit errors, so return zero (0)
         return 0;

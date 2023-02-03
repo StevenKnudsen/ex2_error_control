@@ -1,18 +1,18 @@
 /*!
- * @file symbol_packing.hpp
+ * @file byte_symbol_utils.hpp
  * @author Steven Knudsen
- * @date May 18, 2022
+ * @date Jan 18, 2023
  *
- * @details Pack, unpack, and re-pack byte-size symbols.
+ * @details Utilities to manage packing and unpacking bytes.
  *
- * @copyright University of Alberta 2022
+ * @copyright University of Alberta 2023
  *
  * @license
  * This software may not be modified or distributed in any form, except as described in the LICENSE file.
  */
 
-#ifndef EX2_ERROR_CONTROL_UTILS_SYMBOL_PACKING_H_
-#define EX2_ERROR_CONTROL_UTILS_SYMBOL_PACKING_H_
+#ifndef EX2_SDR_ERROR_CONTROL_BYTE_SYMBOL_UTILS_H_
+#define EX2_SDR_ERROR_CONTROL_BYTE_SYMBOL_UTILS_H_
 
 #include <cstdint>
 #include <vector>
@@ -20,10 +20,9 @@
 namespace ex2 {
   namespace error_control {
     /*!
-     * @brief PHY PDU class that contains @p uint8_t symbols.
+     * @brief Utility class that packs or unpacks @p uint8_t symbols.
      *
-     * @details This class defines a PHY PDU containing @p uint8_t symbols.
-     * A symbol is a mapping of 1 to 8 data bits.
+     * @details This class defines static methods to pack and unpack byte symbols.
      *
      * Symbols may be "unpacked", which means there is one symbol per byte
      * in the PDU. Or they may be "packed" so that a minimum number of bits
@@ -35,7 +34,7 @@ namespace ex2 {
      * least significant bits.
      */
 
-    class MPDUUtility
+    class ByteSymbolUtility
     {
 
     public:
@@ -99,7 +98,7 @@ namespace ex2 {
 
     };
 
-  } /* namespace mac */
+  } /* namespace error_control */
 } /* namespace ex2 */
 
-#endif /* EX2_ERROR_CONTROL_UTILS_SYMBOL_PACKING_H_ */
+#endif /* EX2_SDR_ERROR_CONTROL_BYTE_SYMBOL_UTILS_H_ */

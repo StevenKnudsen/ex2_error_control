@@ -49,27 +49,19 @@ namespace ex2 {
        * @note The FEC factory assumes that all FEC schemes work on a fixed length message.
        * 
        * @param[in] ecScheme The error correction scheme
-       * @param[in] messageLengthBits The message length in bits
+       * @param[in] msgLengthBytes The message length in bytes. If the number of bits is 
+       * not a multiple of 8, the last byte is assumed to be zero-padded.
        */
-      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
-
-      /*!
-      * @brief FEC Constructor
-      * 
-      * @note The FEC factory assumes that all FEC schemes work on a fixed length message.
-      * 
-      * @param[in] ecScheme The error correction scheme
-      * @param[in] messageLengthBits The message length in bits
-      */
-      FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t messageLengthBits);
+      static FEC *makeFECCodec(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t msgLengthBytes);
 
       virtual ~FEC() {}
 
       /*!
        * @brief A virtual function to encode a payload using the FEC scheme
        *
-       * @param[in] message The message to encode; assumed one message bit per byte
-       * @return The codeword (encoded message) unpacked, 1 bit per byte
+       * @param[in] message The message to encode; assumed 8 message bits per byte. If the 
+       * number of bits is not a multiple of 8, the last byte is assumed to be zero-padded.
+       * @return The codeword (encoded message) packed, 8 bits per byte
        */
       virtual std::vector<uint8_t> encode(const std::vector<uint8_t>& message) = 0;
 
@@ -78,21 +70,29 @@ namespace ex2 {
        *
        * @todo It may be better to not have @p encodedPayload as const. What if
        * it needs to be manipulated? After all, there is no contract saying it's
-       * not destroyed afrter decoding
+       * not destroyed after decoding
        *
-       * @param[in] codeword The codeword (encoded message) assume unpacked, 1 bit per byte
+       * @param[in] codeword The codeword (encoded message) assume packed, 8 bits per byte
        * @param[in] snrEstimate An estimate of the SNR for FEC schemes that need it.
-       * @param[out] message The resulting decoded message with one bit per byte
+       * @param[out] message The resulting decoded message with 8 bits per byte. If the 
+       * number of bits is not a multiple of 8, the last byte is assumed to be zero-padded.
        * @return The number of bit errors from the decoding process
        */
       virtual uint32_t decode(std::vector<uint8_t>& codeword, const float snrEstimate,
         std::vector<uint8_t>& message) = 0;
 
-      uint32_t getMessageLength() const;
-
     protected:
-      // ErrorCorrection::ErrorCorrectionScheme m_ecScheme;
-      // uint32_t m_messageLengthBits;
+
+     /*!
+      * @brief FEC Constructor
+      * 
+      * @note The FEC factory assumes that all FEC schemes work on a fixed length message.
+      * 
+      * @param[in] ecScheme The error correction scheme
+      * @param[in] msgLengthBytes The message length in bytes
+      */
+      FEC(ErrorCorrection::ErrorCorrectionScheme ecScheme, const uint32_t msgLengthBytes);
+
       ErrorCorrection *m_errorCorrection = 0;
 
     };
