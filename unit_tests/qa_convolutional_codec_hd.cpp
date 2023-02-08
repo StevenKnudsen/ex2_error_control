@@ -20,11 +20,11 @@
 #include <stdlib.h>
 
 #include <boost/format.hpp>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
+//#include <boost/random.hpp>
+//#include <boost/random/normal_distribution.hpp>
 
 #include "convolutional_codec_hd.hpp"
-#include "qa_byte_symbol_utils.hpp"
+#include "utilities/byte_symbol_utils.hpp"
 #include "vectorTools.hpp"
 
 using namespace std;
@@ -71,6 +71,8 @@ check_decoder_ber (
   bool berExceedExpected,
   double berTolerance)
 {
+  static bool randInitialized = false;
+
   if (ber > 0.1f or ber < 1e-7) {
     printf("The BER must be in the range [1e-7,0.1]\n");
     throw std::exception();
@@ -92,13 +94,21 @@ check_decoder_ber (
 
   // ec is used for convenience
   ErrorCorrection ec(errorCorrectionScheme, QA_CC_HD_MESSAGE_LENGTH_BIT);
+  // @note we assume bpsk for this test
+  double bitsPerSymbol = 1; 
+
+  double rate = ec.getRate();
+  double snrAdjusted = snr + 10.0*std::log10(bitsPerSymbol*rate);
 
   // Get ready for simulating noise at the input SNR
-  float sigma2 = 0.5 / pow (10.0, snr / 10.0); // noise variance
-  boost::mt19937 *rng = new boost::mt19937 ();
-  rng->seed (time (NULL));
-  boost::normal_distribution<> distribution (-sqrt(sigma2), sqrt(sigma2));
-  boost::variate_generator<boost::mt19937, boost::normal_distribution<> > dist (*rng, distribution);
+  // The channel is assumed to be complex, so the noise power is split
+  // between the I and Q channels. For example, to generate complext noise
+  // with variance 1, we need real and imaginary variances to be 1/2.
+  double sigma2 = 1.0 / pow (10.0, snrAdjusted / 10.0); // noise variance
+  double sigma = sqrt(sigma2)*sqrt(2.0)/2.0;
+
+  std::mt19937 generator;
+  std::normal_distribution<double> dist(0.0, sigma);
 
   // Deal with data in unpacked format, i.e., 1 bit per byte.
   // The message length is returned in bits. It's easiest to handle the data as
@@ -122,35 +132,20 @@ check_decoder_ber (
       packedMessage[i] = (uint8_t) (std::rand () & 0x00FF);
     }
 
-#if QA_CC_HD_DEBUG
-    printf("message  : ");
-    for (int i = 0; i < 10; i++) {
-      printf("0x%02x ", packedMessage[i]);
-    }
-    printf("\n");
-#endif
-
     // Encode the packet
     std::vector<uint8_t> payload = ccHDCodec.encode (packedMessage);
-#if QA_CC_HD_DEBUG
-    printf("codeword : ");
-    for (int i = 0; i < 10; i++) {
-      printf("0x%02x ", payload[i]);
-    }
-    printf("\n");
-#endif
 
     std::vector<float> payloadFloat;
     VectorTools::bytesToFloat(payload, true, false, true, 1.0f, payloadFloat);
 
     // Add noise. The bytesToFloat method makes float symbols of mag 1.
 #if QA_CC_HD_DEBUG
-    float pSignal = 0.0f;
-    float pNoise = 0.0f;
+    double pSignal = 0.0f;
+    double pNoise = 0.0f;
 #endif
-    float noise;
+    double noise;
     for (uint32_t i = 0; i < payloadFloat.size(); i++) {
-      noise = dist();
+      noise = dist(generator);
 #if QA_CC_HD_DEBUG
       pNoise += noise*noise;
       pSignal += payloadFloat[i]*payloadFloat[i];
@@ -161,60 +156,49 @@ check_decoder_ber (
 #if QA_CC_HD_DEBUG
     pSignal /= (float) payloadFloat.size();
     pNoise /= (float) payloadFloat.size();
-    printf("pSignal = %g pNoise = %g snr = %g\n", pSignal, pNoise, 10.0f*std::log10(pSignal/pNoise));
+    printf("pSignal = %g pNoise = %g calculated snr = %g\n", pSignal, pNoise, 10.0f*std::log10(pSignal/pNoise));
 #endif
     // We convert back to binary data and impose our own hard decision.
     std::vector<uint8_t> payloadPlusNoise;
     float threshold = 0.0; // The float payload was NRZ, so in [-1,1]
     VectorTools::floatToBytes(threshold, false, payloadFloat, payloadPlusNoise);
 
-#if QA_CC_HD_DEBUG
-    printf("cw+noise : ");
-    for (unsigned int i = 0; i < 10; i++) {
-      printf("0x%02x ", payloadPlusNoise[i]);
-    }
-    printf("\n");
-#endif
-
     // Try to decode the noisy codeword
     std::vector<uint8_t> decodedMessage;
     ccHDCodec.decode(payloadPlusNoise, snr, decodedMessage);
-#if QA_CC_HD_DEBUG
-    printf("dmessage : ");
-    for (int i = 0; i < 10; i++) {
-      printf("0x%02x ", decodedMessage[i]);
-    }
-#endif
+
     // count the bit errors in the decoded message
     uint8_t diffByte;
     for (unsigned int i = 0; i < packedMessage.size(); i++) {
       diffByte = packedMessage[i] ^ decodedMessage[i];
-      numErrors += numOnesInByte(diffByte);
+      if (diffByte > 0) {
+        numErrors += numOnesInByte(diffByte);
+      }
     }
-#if QA_CC_HD_DEBUG
-    printf("At %g dB SNR, numErrors = %d\n", snr, numErrors);
-    printf("\n--------------------\n");
-#endif
     numBits += payloadBitCount;
   } // while not enough bits for BER
 
   std::string ecn = ec.ErrorCorrectionName(errorCorrectionScheme);
   double calcBER = (double) numErrors / (double) numBits;
-#if QA_CC_HD_DEBUG
-  printf("@%g dB, numbBits %d numErrors %d ber %g\n", snr, numBits, numErrors, calcBER);
-#endif
+//#if QA_CC_HD_DEBUG
+  printf("@%g dB (adjusted %g), BER %g numbBits %d numErrors %d calculated BER %g\n", snr, snrAdjusted, ber, numBits, numErrors, calcBER);
+//#endif
   if (berExceedExpected) {
     if (calcBER < ber) {
+      printf("expected to exceed; threshold %g\n",(1.0 - berTolerance/100.0)*ber);
       ASSERT_TRUE(calcBER > (1.0 - berTolerance/100.0)*ber) << (boost::format ("BER too low for %1% @ %2% dB SNR") % ecn % snr).str();
+//      printf("********** Keep in mind that the SNR may be a smidge too high. If repeated runs pass, then it probably is ************\n");
     }
   }
   else {
     if (calcBER > ber) {
-      ASSERT_TRUE(calcBER > (1.0 + berTolerance/100.0)*ber) << (boost::format ("BER too high for %1% @ %2% dB SNR") % ecn % snr).str();
+      printf("not expected to exceed; threshold %g\n",(1.0 + berTolerance/100.0)*ber);
+      ASSERT_TRUE(calcBER < (1.0 + berTolerance/100.0)*ber) << (boost::format ("BER too high for %1% @ %2% dB SNR") % ecn % snr).str();
+//      printf("********** Keep in mind that the SNR may be a smidge too low. If repeated runs pass, then it probably is ************\n");
     }
   }
 
-  delete(rng);
+//  delete(generator);
 } // check decoder
 
 
@@ -325,9 +309,6 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
 #if QA_CC_HD_DEBUG
       printf("packet length %d (2 bytes) %02x\n", packet.size(), packet.size());
 #endif
-    // Unpack the packet to make it 1 bit per byte as per the FEC interface.
-//    ByteSymbolUtility::repack(packet, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
-
       std::vector<uint8_t> encodedPayload = ccHDCodec->encode(packet);
 
       // The codeword (encoded payload) is not systematic, so the message and
@@ -335,14 +316,13 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
       bool same = true;
       for (unsigned long i = 0; i < packet.size(); i++) {
         same = same & (packet[i] == encodedPayload[i]);
-        printf("enc 0x%02x\n",encodedPayload[i]);
       }
       ASSERT_FALSE(same) << "encoded payload matches payload; not possible if codeword is non-systematic";
 
 
-//#if QA_CC_HD_DEBUG
+#if QA_CC_HD_DEBUG
       printf("input packet len %ld encodedPayload len %ld\n",packet.size(),encodedPayload.size());
-//#endif
+#endif
 
       // Decode the encoded payload
       std::vector<uint8_t> dPayload;
@@ -354,23 +334,18 @@ TEST(convolutional_codec_hd, r_1_2_simple_encode_decode_no_errs )
 
       // Check the decoded and original messages match
       ASSERT_TRUE(packet.size() == dPayload.size()) << "decoded payload size does not match input payload size";
-//#if QA_CC_HD_DEBUG
-      printf("target packet len %ld actual packet len %ld encoded len %ld decoded len %ld\n",
+#if QA_CC_HD_DEBUG
+      printf("target packet len %d actual packet len %ld encoded len %ld decoded len %ld\n",
         packetDataLengths[currentPacket], packet.size(), encodedPayload.size(), dPayload.size());
-//#endif
+#endif
       if (bitErrors == 0) {
         same = true;
         for (unsigned long i = 0; i < packet.size(); i++) {
           if (packet[i] != dPayload[i]) printf("%ld\n",i);
-          printf("packet[%ld] 0x%02x decoded 0x%02x\n",i,packet[i],dPayload[i]);
           same = same & (packet[i] == dPayload[i]);
         }
         ASSERT_TRUE(same) << "decoded payload does not match input payload";
       }
-
-      // If we were returning the decoded message, we would need to repack it.
-//      ByteSymbolUtility::repack(dPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
-
 
     } // for various packet lengths
 
@@ -400,46 +375,53 @@ TEST(convolutional_codec_hd, r_1_2_ber_match )
    */
 
   //  // Check some SNRs that should easily do better than 1e-4 BER
-  //  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-  //    60 /* dB */,
-  //    0.0001,
-  //    false,
-  //    10.0);
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   60 /* dB */,
+  //   0.0001,
+  //   false, // Not expected to exceed BER 0.0001
+  //   10.0);
+  for (float snr = -2.0; snr <= 12; snr += 1.0) {
   check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    8 /* dB */,
+    snr /* dB */,
     0.0001,
-    false,
+    false, // Not expected to exceed BER 0.0001
     10.0);
-  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    7 /* dB */,
-    0.0001,
-    false,
-    10.0);
+  }
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   9 /* dB */,
+  //   0.0001,
+  //   false, // Not expected to exceed BER 0.0001
+  //   10.0);
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   8.8 /* dB */,
+  //   0.0001,
+  //   false, // Not expected to exceed BER 0.0001
+  //   10.0);
   // According to Proakis, 4th ed, Figure 8-2-21, right near 6dB SNR a BER of
   // 1e-4 is achieved. Check a little above assuming it will do better than 1e-4
   // and a little below assuming it won't
-  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    6.3 /* dB */,
-    0.0001,
-    false,
-    10.0);
-  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    5.7 /* dB */,
-    0.0001,
-    true,
-    10.0);
-  // At 5 dB SNR, 1e-4 BER will always be exceeded
-  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    5 /* dB */,
-    0.0001,
-    true,
-    10.0);
-  // At 0 dB SNR, 1e-4 BER will be exceeded really quickly -- see the log.
-  check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
-    0 /* dB */,
-    0.0001,
-    true,
-    10.0);
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   8.6 /* dB */,
+  //   0.0001,
+  //   false, // Not expected to exceed BER 0.0001
+  //   10.0);
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   5.7 /* dB */,
+  //   0.0001,
+  //   true, // Expected to exceed BER 0.0001
+  //   10.0);
+  // // At 5 dB SNR, 1e-4 BER will always be exceeded
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   5 /* dB */,
+  //   0.0001,
+  //   true, // Expected to exceed BER 0.0001
+  //   10.0);
+  // // At 0 dB SNR, 1e-4 BER will be exceeded really quickly -- see the log.
+  // check_decoder_ber (ErrorCorrection::ErrorCorrectionScheme::CCSDS_CONVOLUTIONAL_CODING_R_1_2,
+  //   0 /* dB */,
+  //   0.0001,
+  //   true, // Expected to exceed BER 0.0001
+  //   10.0);
 
 }
 

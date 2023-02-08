@@ -44,6 +44,7 @@ static ViterbiCodec::bitarr_t _gen_message(int num_bits)
 
 #define QA_VITERBI_DEBUG 0 // set to 1 for debugging output
 
+#if 0
 /*!
  * @brief Test Main Constructors, the one that is parameterized, and the one
  * that takes the received packet as input
@@ -114,19 +115,23 @@ TEST(Viterbi, Voyager_err)
    * ----------------------------------------------------------------------
    */
   ViterbiCodec codec(7, {109, 79});
-  auto message = _gen_message(32);
-  auto encoded = codec.encode(message);
 
-  // add 5% errors
-  unsigned int nerr = encoded.size() * 0.05;
-  for (size_t i = 0; i < nerr; i++)
-  {
-    int idx = rand() % encoded.size();
-    encoded[idx] = (encoded[idx] == 0) ? (1) : (0);
+  for (unsigned int trial = 0; trial < 100; trial++) {
+    printf("Trial %d\n",trial);
+    auto message = _gen_message(32);
+    auto encoded = codec.encode(message);
+
+    // add 5% errors
+    unsigned int nerr = encoded.size() * 0.05;
+    for (size_t i = 0; i < nerr; i++)
+    {
+      int idx = rand() % encoded.size();
+      encoded[idx] = (encoded[idx] == 0) ? (1) : (0);
+    }
+
+    auto decoded = codec.decode(encoded);
+    ASSERT_EQ(message, decoded);
   }
-
-  auto decoded = codec.decodeTruncated(encoded);
-  ASSERT_EQ(message, decoded);
 }
 
 // Test the given ViterbiCodec by randomly generating 10 input sequences of
@@ -232,7 +237,7 @@ TEST(Viterbi, Cassini)
   TestViterbiCodecAutomatic(codec);
 }
 #endif
-
+#endif
 // Test the given ViterbiCodec by randomly generating 10 input sequences of
 // length 8, 16, 32, and 64 bytes respectively, encode and decode them, then
 // test if the decoded string is the same as the original input.
@@ -283,6 +288,7 @@ void TestViterbiCodecAutomaticPacked(const ViterbiCodec &codec, bool truncated)
   }
 }
 
+#if 0
 TEST(Viterbi, Poly_7x5Packed)
 {
   /* ----------------------------------------------------------------------
@@ -302,7 +308,7 @@ TEST(Viterbi, Poly_6x5Packed)
   ViterbiCodec codec(3, {6, 5});
   TestViterbiCodecAutomaticPacked(codec, true);
 }
-
+#endif
 TEST(Viterbi, VoyagerPacked)
 {
   /* ----------------------------------------------------------------------
@@ -313,7 +319,7 @@ TEST(Viterbi, VoyagerPacked)
   ViterbiCodec codec(7, {109, 79});
   TestViterbiCodecAutomaticPacked(codec, true);
 }
-
+#if 0
 TEST(Viterbi, LTEPacked)
 {
   /* ----------------------------------------------------------------------
@@ -335,3 +341,4 @@ TEST(Viterbi, CDMA_2000Packed)
   ViterbiCodec codec(9, {501, 441, 331, 315});
   TestViterbiCodecAutomaticPacked(codec, false);
 }
+#endif

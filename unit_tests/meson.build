@@ -33,12 +33,12 @@ test('viterbi', unit_test_viterbi,
     timeout: 100
     )
 
-#unit_test_CC_HD_FEC = executable('unit_test-CC_HD_FEC', 'qa_convolutional_codec_hd.cpp', 'vectorTools.cpp', core_source_files, third_party_source_files,
-#    include_directories : incdirUT,
-#    dependencies: [gtest_dep]
-#    )
-#   
-#test('CC_HD_FEC', unit_test_CC_HD_FEC,
-#    timeout: 100
-#    )
+unit_test_CC_HD_FEC = executable('unit_test-CC_HD_FEC', 'qa_convolutional_codec_hd.cpp', 'vectorTools.cpp', core_source_files, third_party_source_files,
+    include_directories : incdirUT,
+    dependencies: [gtest_dep]
+    )
+   
+test('CC_HD_FEC', unit_test_CC_HD_FEC,
+    timeout: 100
+    )
 

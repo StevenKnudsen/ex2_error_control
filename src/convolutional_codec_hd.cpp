@@ -101,7 +101,7 @@ namespace ex2 {
       }
       else {
         // Decode the 1 bit per byte payload.
-        decodedPayload = m_codec->decodeTruncated(encodedPayload);
+        decodedPayload = m_codec->decode(encodedPayload);
 
         ByteSymbolUtility::repack(decodedPayload, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
 
