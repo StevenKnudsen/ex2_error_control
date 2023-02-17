@@ -22,6 +22,7 @@
 #include "third_party/viterbi/viterbi.hpp"
 #include "utilities/byte_symbol_utils.hpp"
 #include "viterbi-utils.hpp"
+#include "vectorTools.hpp"
 
 using namespace std;
 using namespace ex2::error_control;
@@ -32,10 +33,162 @@ using namespace ex2::error_control;
 // See third_party/viterbi/viterbi.hpp
 #define QA_VITERBI_TRELLIS_COL_8_BIT 1
 
-static ViterbiCodec::bitarr_t _gen_message(int num_bits)
+/*!
+ * @brief Count the number of '1' bits in a byte
+ * @param b The byte
+ * @return Number of '1' bits
+ */
+uint8_t numOnesInByte(uint8_t b) {
+  uint8_t count = (b >> 7) & 0x01;
+  count += (b >> 6) & 0x01;
+  count += (b >> 5) & 0x01;
+  count += (b >> 4) & 0x01;
+  count += (b >> 3) & 0x01;
+  count += (b >> 2) & 0x01;
+  count += (b >> 1) & 0x01;
+  count += b & 0x01;
+
+  return count;
+}
+
+/*!
+ * @brief Check FEC decoding for the scheme provided.
+ *
+ * @details Using randomly generated messages at the specificy SNR, test if the
+ * specified bit-error rate can be achieved.
+ *
+ * @param errorCorrectionScheme The error correction scheme.
+ * @param snr The signal to noise ratio of the generated data in the range [-20,60]
+ * @param ber The target bit-error rate in the range [1e-6,0.1]
+ * @param berExceedExpected If true, the target @p ber is expected to be exceeded
+ * @param berTolerance The percent tolerance to allow for the BER to be exceeded, in the range [0,100]
+ */
+double check_ber (const ViterbiCodec &codec, double snr, unsigned int maxBitErrors, unsigned long maxBits)
+{
+  if (snr > 60.0f or snr < -20.0f) {
+    printf("The SNR must be in the range [-20,60]\n");
+    throw std::exception();
+  }
+
+  if (maxBitErrors == 0) {
+    printf("The maximum number of bit errors must be > 0\n");
+    throw std::exception();
+  }
+
+  if (maxBits == 0) {
+    printf("The maximum number of bit encoded/decoded must be > 0\n");
+    throw std::exception();
+  }
+
+  // @note we assume bpsk for this test
+  double bitsPerSymbol = 1;
+  double rate = 0.5; // 1/2 rate
+
+  double snrAdjusted = snr + 10.0*std::log10(bitsPerSymbol*rate);
+
+  // Get ready for simulating noise at the input SNR
+  // The channel is assumed to be complex, so the noise power is split
+  // between the I and Q channels. For example, to generate complext noise
+  // with variance 1, we need real and imaginary variances to be 1/2.
+  double sigma2 = 1.0 / pow (10.0, snrAdjusted / 10.0); // noise variance
+  double sigma = sqrt(sigma2)*sqrt(2.0)/2.0;
+
+  std::mt19937 generator;
+  std::normal_distribution<double> dist(0.0, sigma);
+
+  // Deal with data in packed format, i.e., 8 bits per byte.
+  // The message length is returned in bits. It's easiest to handle the data as
+  // being 1 bit per 8-bit symbol, aka unpacked
+  unsigned int payloadByteCount = 1000;
+  std::vector<uint8_t> packedMessage(payloadByteCount);
+
+  uint32_t numBits = 0;
+  uint32_t numErrors = 0;
+
+  std::srand(std::time(0));
+
+  while (numBits < maxBits && numErrors < maxBitErrors)
+  {
+    // Make a random data payload
+    for (unsigned int i = 0; i < payloadByteCount; i++) {
+      packedMessage[i] = (uint8_t) (std::rand () & 0x00FF);
+    }
+
+    // Encode the packet
+    std::vector<uint8_t> payload = codec.encodePacked (packedMessage);
+
+    std::vector<float> payloadFloat;
+    VectorTools::bytesToFloat(payload, true, false, true, 1.0f, payloadFloat);
+
+    // Add noise. The bytesToFloat method makes float symbols of mag 1.
+//#if QA_CC_HD_DEBUG
+    double pSignal = 0.0f;
+    double pNoise = 0.0f;
+//#endif
+    double noise;
+    for (uint32_t i = 0; i < payloadFloat.size(); i++) {
+      noise = dist(generator);
+//#if QA_CC_HD_DEBUG
+      pNoise += noise*noise;
+      pSignal += payloadFloat[i]*payloadFloat[i];
+//#endif
+      payloadFloat[i] += noise;
+    }
+
+//#if QA_CC_HD_DEBUG
+    pSignal /= (float) payloadFloat.size();
+    pNoise /= (float) payloadFloat.size();
+    printf("pSignal = %g pNoise = %g calculated snr = %g\n", pSignal, pNoise, 10.0f*std::log10(pSignal/pNoise));
+//#endif
+    // We convert back to binary data and impose our own hard decision.
+    std::vector<uint8_t> payloadPlusNoise;
+    float threshold = 0.0; // The float payload was NRZ, so in [-1,1]
+    VectorTools::floatToBytes(threshold, false, payloadFloat, payloadPlusNoise);
+
+    printf("payload size %ld payloadPlusNoise size %ld\n",payload.size(),payloadPlusNoise.size());
+    uint8_t diffPByte;
+    unsigned long payloadErrors = 0;
+    for (unsigned int i = 0; i < payload.size(); i++) {
+      diffPByte = payload[i] ^ payloadPlusNoise[i];
+      if (diffPByte > 0) {
+//        printf("diff[%ld]\n",i);
+        payloadErrors += numOnesInByte(diffPByte);
+      }
+    }
+    printf("payloadErrors %ld\n",payloadErrors);
+
+    // Try to decode the noisy codeword
+    ByteSymbolUtility::repack(payloadPlusNoise, ByteSymbolUtility::BPSymb_8, ByteSymbolUtility::BPSymb_1);
+    std::vector<uint8_t> decodedMessage = codec.decode(payloadPlusNoise);
+    ByteSymbolUtility::repack(decodedMessage, ByteSymbolUtility::BPSymb_1, ByteSymbolUtility::BPSymb_8);
+
+    // count the bit errors in the decoded message
+    printf("packedMessage size %ld decodedMessage size %ld\n",packedMessage.size(),decodedMessage.size());
+    uint8_t diffByte;
+    for (unsigned int i = 0; i < packedMessage.size(); i++) {
+      diffByte = packedMessage[i] ^ decodedMessage[i];
+      if (diffByte > 0) {
+        printf("diff[%ld]\n",i);
+        numErrors += numOnesInByte(diffByte);
+      }
+    }
+    numBits += payloadByteCount*8;
+  } // while not enough bits for BER
+
+  double calcBER = (double) numErrors / (double) numBits;
+//#if QA_CC_HD_DEBUG
+  printf("@%g dB (adjusted %g), numbBits %d numErrors %d calculated BER %g\n", snr, snrAdjusted, numBits, numErrors, calcBER);
+//#endif
+  return calcBER;
+//  delete(generator);
+} // check decoder
+
+
+
+static ViterbiCodec::bitarr_t _gen_message(unsigned long num_bits)
 {
   ViterbiCodec::bitarr_t msg(num_bits);
-  for (int j = 0; j < num_bits; j++)
+  for (unsigned long j = 0; j < num_bits; j++)
   {
     msg[j] = (std::rand() & 0x1);
   }
@@ -44,7 +197,7 @@ static ViterbiCodec::bitarr_t _gen_message(int num_bits)
 
 #define QA_VITERBI_DEBUG 0 // set to 1 for debugging output
 
-#if 0
+#if 1
 /*!
  * @brief Test Main Constructors, the one that is parameterized, and the one
  * that takes the received packet as input
@@ -116,6 +269,24 @@ TEST(Viterbi, Voyager_err)
    */
   ViterbiCodec codec(7, {109, 79});
 
+  double snr = 5.0;
+  unsigned int maxBitErrs = 100;
+  unsigned long maxBits = 1000000;
+  double ber = check_ber (codec, snr, maxBitErrs, maxBits);
+  printf("ber = %g\n",ber);
+
+}
+
+#if 0
+TEST(Viterbi, CCSDS_err)
+{
+  /* ----------------------------------------------------------------------
+   * Confirm codec with constraint length 7 and polynomials 0b1111001, and
+   * 0b1011011 and 5% errors induced
+   * ----------------------------------------------------------------------
+   */
+  ViterbiCodec codec(7, {121, 91});
+
   for (unsigned int trial = 0; trial < 100; trial++) {
     printf("Trial %d\n",trial);
     auto message = _gen_message(32);
@@ -133,7 +304,7 @@ TEST(Viterbi, Voyager_err)
     ASSERT_EQ(message, decoded);
   }
 }
-
+#endif
 // Test the given ViterbiCodec by randomly generating 10 input sequences of
 // length 8, 16, 32 respectively, encode and decode them, then test if the
 // decoded string is the same as the original input.

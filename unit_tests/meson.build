@@ -24,7 +24,7 @@ test('NoFEC', unit_test_No_FEC,
     timeout: 30
     )
 
-unit_test_viterbi = executable('unit_test-viterbi', 'qa_viterbi.cpp', core_source_files, third_party_source_files,
+unit_test_viterbi = executable('unit_test-viterbi', 'qa_viterbi.cpp', 'vectorTools.cpp', core_source_files, third_party_source_files,
     include_directories : incdirUT,
     dependencies: [gtest_dep]
     )
